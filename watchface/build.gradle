@@ -6,7 +6,8 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "com.udacity.gradle.watchface"
+//        applicationId "com.udacity.gradle.watchface"
+        applicationId "com.example.android.sunshine.app"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
@@ -17,6 +18,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    lintOptions {
+        abortOnError false
     }
 }
 

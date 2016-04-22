@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.udacity.gradle.watchface;
+package com.example.android.sunshine.app;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -31,6 +33,7 @@ import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.lang.ref.WeakReference;
@@ -42,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  * devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient mode.
  */
 public class MyWatchFace extends CanvasWatchFaceService {
+    private String TAG="MyWatchFace";
     /**
      * Update rate in milliseconds for interactive mode. We update once a second to advance the
      * second hand.
@@ -55,6 +59,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
     @Override
     public Engine onCreateEngine() {
+        Log.e(TAG,"onCreateEngine");
         return new Engine();
     }
 
@@ -139,6 +144,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onTimeTick() {
+            Log.e(TAG,"onTimeTick");
             super.onTimeTick();
             invalidate();
         }
@@ -150,6 +156,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient) {
                     mHandPaint.setAntiAlias(!inAmbientMode);
+                    Log.e(TAG, "onAmbientModeChanged");
                 }
                 invalidate();
             }
@@ -168,6 +175,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             Resources resources = MyWatchFace.this.getResources();
             switch (tapType) {
                 case TAP_TYPE_TOUCH:
+                    Log.e(TAG, "touched screen");
                     // The user has started touching the screen.
                     break;
                 case TAP_TYPE_TOUCH_CANCEL:
@@ -186,7 +194,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
         @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             mTime.setToNow();
-
+            Log.e(TAG, TAG+" onDraw");
             // Draw the background.
             if (isInAmbientMode()) {
                 canvas.drawColor(Color.BLACK);
@@ -199,6 +207,13 @@ public class MyWatchFace extends CanvasWatchFaceService {
             // portion.
             float centerX = bounds.width() / 2f;
             float centerY = bounds.height() / 2f;
+
+            Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.art_snow);
+
+            Rect src = new Rect(0, 0, icon.getWidth(), icon.getHeight());
+            Rect dest = new Rect(100, 100, bounds.width()-100, bounds.height()-100);
+            canvas.drawBitmap(icon, src, dest, null);
+
 //            float centerX = (bounds.width() / 2f)+35;
 //            float centerY = (bounds.height() / 2f)+35;
 
@@ -323,5 +338,11 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
             }
         }
+    }
+    public void sendWeatherToWear(){
+//        PutDataMapRequest putDataMapRequest=PutDataMapRequest.create("/data");
+//        putDataMapRequest.getDataMap().putInt("high-temp",75);
+//
+//        putDataMapRequest.getDataMap().
     }
 }
