@@ -38,6 +38,7 @@ import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             }
         }
         mGoogleApiClient=new GoogleApiClient.Builder(this)
+                .enableAutoManage(this,this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -126,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
 
         mHandler=new Handler();
         mHandler.post(mSend);
-
     }
 
     private Runnable mSend=new Runnable() {
@@ -245,17 +246,19 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         PutDataMapRequest putDataMapRequest=PutDataMapRequest.create("/data");
         putDataMapRequest.getDataMap().putInt("high-temp",75);
 
-        PutDataRequest request=putDataMapRequest.asPutDataRequest();
-        Wearable.DataApi.putDataItem(mGoogleApiClient,request.setUrgent())
-                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-                    @Override
-                    public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-                        if(!dataItemResult.getStatus().isSuccess()){
-                            Log.e(LOG_TAG,"sendWeatherToWear Failed :(");
-                        }else{
-                            Log.e(LOG_TAG,"sendWeatherToWear success!");
-                        }
-                    }
-                });
+//        PutDataRequest request=putDataMapRequest.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult=Wearable.DataApi.putDataItem(mGoogleApiClient,putDataMapRequest.asPutDataRequest());
+
+//        Wearable.DataApi.putDataItem(mGoogleApiClient,request.setUrgent())
+//                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+//                    @Override
+//                    public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
+//                        if(!dataItemResult.getStatus().isSuccess()){
+//                            Log.e(LOG_TAG,"sendWeatherToWear Failed :(");
+//                        }else{
+//                            Log.e(LOG_TAG,"sendWeatherToWear success!");
+//                        }
+//                    }
+//                });
     }
 }

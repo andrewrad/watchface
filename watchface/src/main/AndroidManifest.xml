@@ -39,12 +39,11 @@
         </service>
 
         <service
-            android:name=".WeatherReceiver"
-            android:enabled="true"
-            android:exported="true">
+            android:name=".WeatherReceiver">
             <intent-filter>
-                <action
-                    android:name="com.google.android.gms.wearable.BIND_LISTENER"/>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*"
+                    android:path="/data" />
             </intent-filter>
         </service>
 
