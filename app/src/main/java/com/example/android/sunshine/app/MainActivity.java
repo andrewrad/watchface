@@ -17,6 +17,8 @@ package com.example.android.sunshine.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,15 +42,18 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import java.io.ByteArrayOutputStream;
+
 public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private static final String DETAILFRAGMENT_TAG = "DTFRAG";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String SENT_TOKEN_TO_SERVER = "sentTokenToServer";
     private GoogleApiClient mGoogleApiClient;
@@ -242,11 +247,34 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e("Main","onConnectedFailed");
     }
-    public void sendWeatherToWear(){
-        PutDataMapRequest putDataMapRequest=PutDataMapRequest.create("/data");
-        putDataMapRequest.getDataMap().putInt("high-temp",75);
+    private static Asset createAssetFromBitmap(Bitmap bitmap) {
+        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+        return Asset.createFromBytes(byteStream.toByteArray());
+    }
 
-//        PutDataRequest request=putDataMapRequest.asPutDataRequest();
+    public void sendWeatherToWear(){
+        int num=(int)(Math.random() * 50 + 1);
+        PutDataMapRequest putDataMapRequest=PutDataMapRequest.create("/data");
+
+        putDataMapRequest.getDataMap().putInt("high_temp",num*2);
+        putDataMapRequest.getDataMap().putInt("low_temp", num);
+        Bitmap bitmap;
+
+        //dummy image data to send to wearable
+        if(num>33) {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clouds);
+        }else if(num<16){
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clear);
+        }else{
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_snow);
+        }
+
+        Asset asset = createAssetFromBitmap(bitmap);
+        putDataMapRequest.getDataMap().putAsset("image", asset);
+
+        Log.e("MainActivity","sending high_temp as: "+num*2+", low_temp: "+num+", image: "+asset);
+
         PendingResult<DataApi.DataItemResult> pendingResult=Wearable.DataApi.putDataItem(mGoogleApiClient,putDataMapRequest.asPutDataRequest());
 
 //        Wearable.DataApi.putDataItem(mGoogleApiClient,request.setUrgent())

@@ -33,19 +33,20 @@
 
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
-
+                <action android:name="com.example.android.sunshine.app.UPDATE_WATCHFACE"/>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <category android:name="com.google.android.wearable.watchface.category.WATCH_FACE" />
             </intent-filter>
         </service>
 
-        <service
-            android:name=".WeatherReceiver">
-            <intent-filter>
-                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
-                <data android:scheme="wear" android:host="*"
-                    android:path="/data" />
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name=".WeatherReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.gms.wearable.DATA_CHANGED" />-->
+                <!--<data android:scheme="wear" android:host="*"-->
+                    <!--android:path="/data" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
     </application>
 
