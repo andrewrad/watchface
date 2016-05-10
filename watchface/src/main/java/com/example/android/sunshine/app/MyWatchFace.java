@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.android.sunshine.app;
 
 import android.content.BroadcastReceiver;
@@ -57,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Analog watch face with a ticking second hand. In ambient mode, the second hand isn't shown. On
  * devices with low-bit ambient mode, the hands are drawn without anti-aliasing in ambient mode.
+ *
+ * Modified from example watch faces in Android Studio
  */
 public class MyWatchFace extends CanvasWatchFaceService {
     private String TAG="MyWatchFace";
@@ -104,8 +90,8 @@ public class MyWatchFace extends CanvasWatchFaceService {
         Paint mHandPaint;
         boolean mAmbient;
         Time mTime;
-        int mHighTemp;
-        int mLowTemp;
+        String mHighTemp;
+        String mLowTemp;
         Bitmap mWeatherIcon;
 
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
@@ -237,7 +223,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             }
 
             Rect src = new Rect(0, 0, mWeatherIcon.getWidth(), mWeatherIcon.getHeight());
-            Rect dest = new Rect(100, 100, bounds.width() - 100, bounds.height() - 100);
+            Rect dest = new Rect(125, 125, bounds.width() - 125, bounds.height() - 125);
             canvas.drawBitmap(mWeatherIcon, src, dest, null);
 
 //            float centerX = (bounds.width() / 2f)+35;
@@ -252,7 +238,7 @@ public class MyWatchFace extends CanvasWatchFaceService {
             float secStart = centerX - 30;
 
             float minLength = centerX - 60;
-            float minStart = centerX - 100;
+            float minStart = centerX - 130;//-100
 
             float hrLength = centerX - 80;
 
@@ -264,10 +250,6 @@ public class MyWatchFace extends CanvasWatchFaceService {
                 float secStartY = (float) -Math.cos(secRot) * secStart;
 
                 canvas.drawLine(centerX + secStartX, centerY + secStartY, centerX + secX, centerY + secY, mHandPaint);
-
-//                mHandPaint.setTextSize(24);
-//                mHandPaint.setTextAlign(Paint.Align.CENTER);
-//                canvas.drawText("78"+(char)0x00B0,centerX + secX, (centerY + secY)+7, mHandPaint);
             }
 
             //minute hand
@@ -282,19 +264,26 @@ public class MyWatchFace extends CanvasWatchFaceService {
 
             canvas.drawLine(centerX + minStartX, centerY + minStartY, centerX + minX, centerY + minY, mHandPaint);
 //            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-            mHandPaint.setTextSize(24);
+            mHandPaint.setTextSize(22);
             mHandPaint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(Integer.toString(mLowTemp) + (char) 0x00B0, centerX + minCenterTextX, (centerY + minCenterTextY) + 7, mHandPaint);
 
+            mLowTemp=(mLowTemp==null?" ":mLowTemp);
+
+            //draw the minute hand
+            canvas.drawText(mLowTemp, centerX + minCenterTextX, (centerY + minCenterTextY) + 7, mHandPaint);
 
             //hour hand
             float hrX = (float) Math.sin(hrRot) * hrLength;
             float hrY = (float) -Math.cos(hrRot) * hrLength;
 //            canvas.drawLine(centerX, centerY, centerX + hrX, centerY + hrY, mHandPaint);
             mHandPaint.setTextSize(32);
+            mHandPaint.setFakeBoldText(true);
             mHandPaint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(Integer.toString(mHighTemp) + (char) 0x00B0, centerX + hrX, centerY + hrY, mHandPaint);
 
+            mHighTemp=(mHighTemp==null?"*":mHighTemp);
+
+            //draw the hour hand
+            canvas.drawText(mHighTemp, centerX + hrX, centerY + hrY, mHandPaint);
         }
 
         @Override
@@ -390,15 +379,15 @@ public class MyWatchFace extends CanvasWatchFaceService {
                     String path = dataEvent.getDataItem().getUri().getPath();
                     if (path.equals("/data")) {
 
-                        mHighTemp = dataMap.getInt("high_temp");
-                        mLowTemp = dataMap.getInt("low_temp");
+                        mHighTemp = dataMap.getString("high_temp");
+                        mLowTemp = dataMap.getString("low_temp");
                         Asset asset=dataMap.getAsset("image");
 
                         //start asynctask for processing the bitmap
                         GetBitmap getBitmap= new GetBitmap();
                         getBitmap.execute(asset);
 
-                        Log.e(TAG, "received: " + mHighTemp + ", LT: " + mLowTemp);
+                        Log.e(TAG, "received: " + mHighTemp + ", LT: " + mLowTemp+", image: "+asset);
                     }
                 }
             }

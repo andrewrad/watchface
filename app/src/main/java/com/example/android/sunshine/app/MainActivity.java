@@ -15,7 +15,10 @@
  */
 package com.example.android.sunshine.app;
 
+import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +29,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -50,17 +54,15 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.io.ByteArrayOutputStream;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DTFRAG";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     public static final String SENT_TOKEN_TO_SERVER = "sentTokenToServer";
-    private GoogleApiClient mGoogleApiClient;
 
     private boolean mTwoPane;
     private String mLocation;
-    private Handler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,27 +125,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
                 startService(intent);
             }
         }
-        mGoogleApiClient=new GoogleApiClient.Builder(this)
-                .enableAutoManage(this,this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        mGoogleApiClient.connect();
-
-        mHandler=new Handler();
-        mHandler.post(mSend);
     }
-
-    private Runnable mSend=new Runnable() {
-        @Override
-        public void run() {
-            sendWeatherToWear();
-            Log.e("Main","sending message to wear");
-            mHandler.postDelayed(mSend,5000);
-        }
-    };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -231,62 +213,5 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        Log.e("Main","onConnected!!");
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.e("Main","onConnectedSuspended");
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e("Main","onConnectedFailed");
-    }
-    private static Asset createAssetFromBitmap(Bitmap bitmap) {
-        final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-        return Asset.createFromBytes(byteStream.toByteArray());
-    }
-
-    public void sendWeatherToWear(){
-        int num=(int)(Math.random() * 50 + 1);
-        PutDataMapRequest putDataMapRequest=PutDataMapRequest.create("/data");
-
-        putDataMapRequest.getDataMap().putInt("high_temp",num*2);
-        putDataMapRequest.getDataMap().putInt("low_temp", num);
-        Bitmap bitmap;
-
-        //dummy image data to send to wearable
-        if(num>33) {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clouds);
-        }else if(num<16){
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_clear);
-        }else{
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.art_snow);
-        }
-
-        Asset asset = createAssetFromBitmap(bitmap);
-        putDataMapRequest.getDataMap().putAsset("image", asset);
-
-        Log.e("MainActivity","sending high_temp as: "+num*2+", low_temp: "+num+", image: "+asset);
-
-        PendingResult<DataApi.DataItemResult> pendingResult=Wearable.DataApi.putDataItem(mGoogleApiClient,putDataMapRequest.asPutDataRequest());
-
-//        Wearable.DataApi.putDataItem(mGoogleApiClient,request.setUrgent())
-//                .setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
-//                    @Override
-//                    public void onResult(@NonNull DataApi.DataItemResult dataItemResult) {
-//                        if(!dataItemResult.getStatus().isSuccess()){
-//                            Log.e(LOG_TAG,"sendWeatherToWear Failed :(");
-//                        }else{
-//                            Log.e(LOG_TAG,"sendWeatherToWear success!");
-//                        }
-//                    }
-//                });
     }
 }
